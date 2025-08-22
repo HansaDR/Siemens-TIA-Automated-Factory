@@ -10,7 +10,7 @@ This project simulates an industrial production line using Siemens TIA Portal an
 ---
 
 ## Demonstration
-**(This is the most important part!)** Record a short video or create a GIF of your simulation working and put it here. It's very powerful.
+
 
 ![Simulation GIF](link_to_your_gif_or_video.gif)
 
