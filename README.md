@@ -1,8 +1,7 @@
 # Siemens-TIA-Automated-Factory
-Part 1 : Automated Sorting &amp; Machining Line
 
 
-# Automated Sorting & Machining Line Simulation
+# Automated Sorting, Machining, Assemblying and Packing Simulation
 
 ## Project Objective
 This project simulates an industrial production line using Siemens TIA Portal and Factory I/O. The system automatically sorts three different types of raw materials (Blue, Green, Metal) onto dedicated conveyor lines for parallel CNC machining.
