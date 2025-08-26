@@ -11,7 +11,11 @@ The virtual plant performs a complete mini production workflow:
 5. Quality Gate (basic presence / type validation)
 6. Packing / Palletizing (batch-based release)
 
-This README recreates and expands the project description according to the subtitle focus: Automated Sorting, Machining, Assemblying and Packing.
+
+![1](https://github.com/user-attachments/assets/7707c6c0-8167-4c50-aa64-389f60f18609)
+
+
+![2](https://github.com/user-attachments/assets/8c1d7da5-2009-4099-b6bf-49c8d57da534)
 
 ---
 
@@ -31,27 +35,21 @@ Demonstrate an educational yet industry-relevant control solution that:
 |------|----------|-------------|--------------------------|
 | Infeed & Detection | Accept raw parts | Presence detect, color scan | Part_Present, Color_Blue/Green, Metal_Flag |
 | Sorting Diverter | Route parts | Diverter left/center/right | Diverter_CMD, Jam_Sensor |
-| Buffer Queues | Accumulate types | FIFO logic | Queue_Count_X, Queue_Full_X |
 | Machining Station | Process parts | Clamp, spindle | Clamp_Cyl, Spindle_Run, Cycle_Done |
 | Assembly Cell | Combine items | Pick/Place | Asm_Part_A_Ready, Asm_Part_B_Ready |
-| QA Gate | Simple validation | Type ok/fail | QA_OK, QA_Fail |
-| Packing / Palletizing | Batch & release | Counter, eject | Pack_Count, Batch_Done |
-
-(Adjust to your actual Factory I/O layout.)
+| Packing / Palletizing | Batch & release | Counter, eject | Pack_Count, Batch_Done | (To be continuned..)
 
 ---
 
 ## 🔄 Process Flow (High-Level)
 
 1. Raw part enters via conveyor.
-2. Sensor cluster classifies (color or metallic reflectivity).
-3. PLC sets diverter path → part sent to its buffer lane.
+2. Sensor cluster classifies (color).
+3. Send according to material type (Blue Green Red).
 4. When machining station is free and buffer has stock → transfer part.
 5. Machining cycle executes (simulate with timers / step sequence).
-6. Machined part + complementary component (e.g., fastener) assembled.
-7. Assembled unit passes QA (basic presence / correct combination logic).
-8. Good units accumulate; every N units a “box” (virtual) is considered packed.
-9. Packing counter resets; cycle repeats.
+6. Machined part(product base) + complementary component (Product lid) assembled.
+7. Assembled unit passes for packaging.
 
 ---
 
@@ -61,22 +59,30 @@ Suggested program structuring (TIA Portal):
 
 Program Blocks:
 * OB1: Main cyclic orchestration calling modular FBs.
-* OB100: Startup initialization (reset flags, counters).
-* OB35 (optional): Time-critical (e.g., high-speed counting) – only if needed.
-* FB_Sorter: Manages classification and diverter actuation.
-* FB_Buffer (instanced per type): Queue logic (count, release).
-* FB_Machining: Sequence (State machine: Idle → Load → Clamp → Process → Unclamp → Unload).
-* FB_Assembly: Verifies components availability and triggers combination.
-* FB_QA: Simple rule validation (e.g., Blue + Machined = OK).
-* FB_Packing: Batch counting & “package complete” pulse.
-* FB_Alarms: Central alarm / interlock aggregator.
-* FC_Util_*: Helpers (edge detection, timers wrapper, scaling).
+  
+[Main(OB1).pdf](https://github.com/user-attachments/files/21991994/Main.OB1.pdf)
+
+* Pick and Place Machine 1
+
+[Pick and Place 1.pdf](https://github.com/user-attachments/files/21992008/Pick.and.Place.1.pdf)
+
+* Pick and Place Machine 2
+  
+[Pick and Place 2.pdf](https://github.com/user-attachments/files/21992019/Pick.and.Place.2.pdf)
+
+* Pick and Place Machine 3
+
+To be continuned
+
 
 Data Blocks:
-* DB_Global: System flags, enable bits.
-* DB_Tags_IO: Mapped I/O (if not direct).
-* Instance DBs: One per FB (e.g., DB_Sorter, DB_Machining).
-* DB_Stats (optional): Throughput, rejects, OEE placeholders.
+
+[Programe Blocks.pdf](https://github.com/user-attachments/files/21992036/Programe.Blocks.pdf)
+
+
+Tags:
+
+[Tags.pdf](https://github.com/user-attachments/files/21992059/Tags.pdf)
 
 ---
 
