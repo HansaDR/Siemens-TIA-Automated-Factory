@@ -72,17 +72,37 @@ Program Blocks:
 
 * Pick and Place Machine 3
 
-To be continuned
-
+[Pick and Place 3.pdf](https://github.com/user-attachments/files/22001818/Pick.and.Place.3.pdf)
 
 Data Blocks:
 
 [Programe Blocks.pdf](https://github.com/user-attachments/files/21992036/Programe.Blocks.pdf)
 
-
 Tags:
 
-[Tags.pdf](https://github.com/user-attachments/files/21992059/Tags.pdf)
+[Tags.pdf](https://github.com/user-attachments/files/22001814/Tags.pdf)
+
+---
+
+## 🧬 Animation
+
+Sorting:
+
+
+https://github.com/user-attachments/assets/f82fc5e8-b0ca-4505-8fbb-c64fb0628032
+
+
+Machining:
+
+
+https://github.com/user-attachments/assets/afe20aac-1322-44ec-9088-3856ad0f5227
+
+
+Assembling:
+
+
+https://github.com/user-attachments/assets/24868bd7-c645-4bae-b6b9-e50c8c907e81
+
 
 ---
 
