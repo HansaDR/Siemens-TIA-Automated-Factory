@@ -1,6 +1,6 @@
 # Siemens-TIA-Automated-Factory
 
-# Automated Sorting, Machining, Assemblying and Packing Simulation
+# Automated Sorting, Machining, Assembling and Packing Simulation
 
 A fully simulated discrete manufacturing line built with Siemens TIA Portal (v19), PLCSIM, and Factory I/O.  
 The virtual plant performs a complete mini production workflow:
@@ -156,7 +156,7 @@ Example (placeholder):
 | Spindle Motor | Act_4 | Q0.3 | Q_Spindle |
 | QA Reject Pusher | Act_5 | Q0.4 | Q_Reject |
 
-(Replace with actual tags; ensure alignment with the TIA project.)
+
 
 ![I/O Map](link_to_your_io_map_screenshot.jpg)
 
@@ -294,11 +294,6 @@ Potential metrics to log in DB_Stats:
 
 ---
 
-## 📜 License
-
-Specify your chosen license (e.g., MIT, Apache-2.0) if you intend to share publicly.
-
----
 
 ## 🙌 Contributions
 
@@ -322,11 +317,3 @@ Q: Why are some steps timers instead of sensor-driven?
 A: In simulation we often abstract physical cycle completion; replace with actual sensors when migrating.
 
 ---
-
-## 📎 Notes
-
-The word "Assemblying" in the subtitle is retained for continuity, but “Assembling” is the standard spelling.
-
----
-
-Feel free to replace all placeholder links, images, and tag examples with those from your actual implementation.
