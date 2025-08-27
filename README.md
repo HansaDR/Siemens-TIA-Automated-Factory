@@ -17,6 +17,13 @@ The virtual plant performs a complete mini production workflow:
 
 ![2](https://github.com/user-attachments/assets/8c1d7da5-2009-4099-b6bf-49c8d57da534)
 
+
+![3](https://github.com/user-attachments/assets/f992d9c7-0730-40b0-8fa6-73b1c366a4b9)
+
+
+![4](https://github.com/user-attachments/assets/8ff4890f-c850-40a0-af37-7eee2e13db37)
+
+
 ---
 
 ## 🎯 Project Objective
