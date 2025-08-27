@@ -1,4 +1,4 @@
-# Siemens-TIA-Automated-Factory
+# Siemens-TIA-Automated-Factory V1
 
 # Automated Sorting, Machining, Assemblying and Packing Simulation
 
@@ -98,13 +98,21 @@ Program Blocks (OB / FB / FC):
 ## 🧬 Animation (Process Clips)
 
 Sorting:  
-https://github.com/user-attachments/assets/f82fc5e8-b0ca-4505-8fbb-c64fb0628032
+
+https://github.com/user-attachments/assets/aebd0dca-e3bc-4d08-803b-5e45f96bc2d8
+
 
 Machining:  
-https://github.com/user-attachments/assets/afe20aac-1322-44ec-9088-3856ad0f5227
+
+
+https://github.com/user-attachments/assets/11333f61-7730-4964-84fb-701ae40516f8
+
 
 Assembly:  
-https://github.com/user-attachments/assets/24868bd7-c645-4bae-b6b9-e50c8c907e81
+
+
+https://github.com/user-attachments/assets/c5af7db6-ae08-4349-af2a-88a7930d3e28
+
 
 ---
 
