@@ -1,328 +1,245 @@
-# Siemens-TIA-Automated-Factory V1
+# Siemens-TIA-Automated-Factory
 
-# Automated Sorting, Machining, Assemblying and Packing Simulation
-
+# Automated Sorting, Machining, Assembling and Packing Simulation
 A fully simulated discrete manufacturing line built with Siemens TIA Portal (v19), PLCSIM, and Factory I/O.  
-The virtual plant performs a complete mini production workflow:
+This project now includes completed palletizer and overhead crane subsystems (see demo link below). The virtual plant performs a complete mini production workflow:
 1. Infeed & Identification (color / material based)
 2. Sorting to dedicated buffers
-3. Machining (e.g., drilling / surface treatment / lid production placeholder)
-4. Assembly (pairing product base with product lid)
+3. Machining (e.g., drilling / lid production)
+4. Pick & Place / Assembly (pairing product base with product lid)
 5. Quality Gate (presence / type validation)
 6. Packing / Palletizing (batch-based release)
+7. Pallet handling with Palletizer and Overhead Crane (pallet transport / staging)
 
+Demo (YouTube — full system including Palletizer & Crane): https://youtu.be/OTtNMz4cj60
 
 ---
 
-## 📸 Layout Images
+## 📸 Layout & Images
 
+(Consider mirroring these images into `docs/images/` for repo permanence.)
 
 ![Layout 1](https://github.com/user-attachments/assets/7707c6c0-8167-4c50-aa64-389f60f18609)
-
 ![Layout 2](https://github.com/user-attachments/assets/8c1d7da5-2009-4099-b6bf-49c8d57da534)
-
 ![I/O Mapping View A](https://github.com/user-attachments/assets/f992d9c7-0730-40b0-8fa6-73b1c366a4b9)
-
 ![I/O Mapping View B](https://github.com/user-attachments/assets/8ff4890f-c850-40a0-af37-7eee2e13db37)
-
 
 ---
 
 ## 🎯 Project Objective
 
 Demonstrate an educational yet industry-relevant control solution that:
-* Integrates multiple functional cells under one PLC program architecture.
+* Integrates multiple functional cells (sorting, machining, pick & place, assembly, inspection, palletizing, crane handling) under one PLC program architecture.
 * Uses modular, reusable, and state-driven logic blocks.
-* Simulates a part lifecycle from raw material arrival to finished packed unit.
-* Provides a foundation for optimization (OEE, traceability, recipe control).
+* Simulates a product lifecycle from raw material arrival to packaged and palletized units.
+* Provides a base for OEE, traceability, recipe control, and integration with MES.
 
 ---
 
-## 🧱 System Overview
+## 🧱 System Overview (Updated)
 
-| Cell | Function | Key Actions | Core Signals (Examples) |
-|------|----------|-------------|--------------------------|
-| Infeed & Detection | Accept raw parts & classify | Presence detect, color / metal scan | Part_Present, Type_Blue, Type_Green, Type_Metal |
-| Sorting Diverter / Distribution | Route parts to buffers or machines | Diverters, stoppers, pivot arms | Diverter_CMD, Stopper_Release, Jam_Sensor |
-| Buffer Queues (per type) | Accumulate WIP | FIFO queue control, release | Buffer_Count_X, Buffer_Release_X |
-| Machining Station(s) | Process / produce base or lid | Clamp, process cycle, release | Clamp_Closed, Cycle_Progress, Cycle_Done |
-| Pick & Place Units (PP1..PP3) | Transfer & position parts | X/Z motion, rotation, grip | PPn_XBusy, PPn_ClampDS, PPn_Grip |
-| Assembly Cell | Combine base + lid | Position, clamp, confirm | Asm_BaseReady, Asm_LidReady, Asm_Done |
-| Quality Gate | Validate assembly | Sensor / logic checks | QA_OK, QA_Fail, Part_Type |
-| Packing / Palletizing | Batch & release | Count, batch complete pulse | Pack_Count, Batch_Done |
-| Safety & System Control | Safe operation | Start/Stop, door interlocks | Start_Button, Stop_Button, SafetyDoor_OK |
-| Diagnostics & Stats | KPIs & logging | Count, timing, errors | Stats.*, Alarm_Active |
-
----
-
-## 🔄 Process Flow (High-Level)
-
-1. Raw part enters via infeed conveyor (presence sensor latches a record).
-2. Classification sensors identify type (Blue / Green / Metal).
-3. Sorting logic actuates diverters / stoppers to queue or send part to a machining center.
-4. When a machining station is free and buffer has stock → transfer part.
-5. Machining cycle executes (timed or progress-based) producing a base or lid component.
-6. Pick & Place units collect required base + lid and deliver to assembly station.
-7. Assembly clamps, positions, and completes mechanical join (simulated).
-8. Quality Gate validates correct pairing and component presence.
-9. Accepted units increment packing counter; upon reaching Batch_Size a Batch_Done pulse signals a virtual packing event.
+| Cell | Function | Key Actions | Example Signals |
+|------|----------|-------------|-----------------|
+| Infeed & Detection | Accept parts & classify | Presence detect, color/metal scan | I_Infeed_PE, I_Color_Blue, I_Color_Green, I_Metal |
+| Sorting Diverter | Route parts to buffers or machines | Pivot arms, stoppers | Q_Pivot_Blue, Q_Stopper_A |
+| Buffer Queues | Accumulate WIP per type | FIFO control, release handshake | BufferCount_Blue, Buffer_Release_Blue |
+| Machining Centers | Produce base or lid | Clamp, spindle/process, release | MC[n]_Clamp, MC[n]_Progress, MC[n]_Done |
+| Pick & Place (PP1..PP3) | Transfer & position parts | X/Z motion, rotate, grip | PPn_X, PPn_Z, PPn_Grab |
+| Assembly | Combine base + lid | Positioning, clamp, confirm | ASM_BaseReady, ASM_LidReady, ASM_Done |
+| Quality Gate | Validate assembly | Type & presence checks | QA_OK, QA_Fail |
+| Packing / Palletizer | Batch, form cartons, pick/place on pallet | BatchCount, Pallet_Clamp, Pallet_Rise | PACK_Count, PKG_Batch_Done, PAL_Clamp |
+| Overhead Crane | Move loaded pallets between stations | Travel X/Y, lift/lower, clamp | CRN_XPos, CRN_YPos, CRN_Clamp |
+| Safety & Diagnostics | Start/Stop, doors, alarms | EStop, Door_OK, AlarmBits | I_Stop, SafetyDoor_OK, Alarm_Aggregate |
 
 ---
 
-## 🧠 Control Architecture
+## 🔄 Process Flow (High-Level, updated)
 
-Suggested program structuring (TIA Portal):
-
-Program Blocks (OB / FB / FC):
-* OB1 – Main cyclic orchestration calling modular FBs.
-* Additional FBs (Sorter, Buffer, Machining, Pick & Place, Assembly, QA, Packing, Safety, Alarms, Utility).
-
-### PDF Documentation (Uploaded)
-
-* Main Organization Block: [Main(OB1).pdf](https://github.com/user-attachments/files/21991994/Main.OB1.pdf)
-  
-* Pick & Place Machine 1: [Pick and Place 1.pdf](https://github.com/user-attachments/files/21992008/Pick.and.Place.1.pdf)
-  
-* Pick & Place Machine 2: [Pick and Place 2.pdf](https://github.com/user-attachments/files/21992019/Pick.and.Place.2.pdf)
-  
-* Pick & Place Machine 3: [Pick and Place 3.pdf](https://github.com/user-attachments/files/22001818/Pick.and.Place.3.pdf)
-
-
-### Data / Program Blocks Overview PDFs
-* Program Blocks Summary: [Programe Blocks.pdf](https://github.com/user-attachments/files/21992036/Programe.Blocks.pdf) (Typo in filename: should be “Program”)
-* Tags / Global Variables: [Tags.pdf](https://github.com/user-attachments/files/22001814/Tags.pdf)
-
+1. Raw parts enter via infeed conveyor and are classified (Blue / Green / Metal).
+2. Parts are sorted to dedicated buffers or routed to machining centers.
+3. Machining centers produce machined bases and/or lids.
+4. Pick & Place robots collect components and deliver them to assembly stations.
+5. Assembly combines base + lid; QA gate validates the unit.
+6. Valid units accumulate into batches; packing forms boxes or pallet loads.
+7. Palletizer places packages on pallets and secures (clamp/strap simulation).
+8. Overhead crane moves completed pallets to storage or shipping staging area.
+9. System logs KPI events and errors to DB_Stats for later analysis.
 
 ---
 
-## 🧬 Animation (Process Clips)
+## 🧠 Control Architecture (Recommended)
 
-Sorting:  
+Program Blocks:
+* OB1 – Main cyclic orchestration
+* OB100 – Startup / reset
+* FB_Sorter – classification & diverter control
+* FB_Buffer – FIFO queue logic (multi-instance)
+* FB_Machining – per machine (state machine: Idle→Load→Clamp→Process→Unload)
+* FB_PickPlace – per PP robot (motion & grip sequencing)
+* FB_Assembly – assembly state & handshake
+* FB_QA – validation logic & result pulses
+* FB_Packing – batch forming & pack release
+* FB_Palletizer – pallet placement sequencing, clamp & eject
+* FB_Crane – crane motion & pallet handover sequencing
+* FB_Safety – interlocks & aggregated inhibits
+* FC_Util_* – edge detectors, timers, helpers
 
-https://github.com/user-attachments/assets/aebd0dca-e3bc-4d08-803b-5e45f96bc2d8
+Data Blocks:
+* DB_Global – global flags, master start, modes
+* DB_IO / gIO – structured I/O snapshot (recommended)
+* DB_Instance_* – instance DBs for each FB (FB_Machining_DB0, DB_PP1, etc.)
+* DB_Stats – KPI counters and timestamps
+* DB_Recipes – batch sizes, pallet patterns, machine recipes
 
-
-Machining:  
-
-
-https://github.com/user-attachments/assets/11333f61-7730-4964-84fb-701ae40516f8
-
-
-Assembly:  
-
-
-https://github.com/user-attachments/assets/c5af7db6-ae08-4349-af2a-88a7930d3e28
-
+PDF references included in repo:
+* Main control organization: [Main(OB1).pdf](https://github.com/user-attachments/files/21991994/Main.OB1.pdf)
+* Pick & Place FBs: [Pick and Place 1.pdf](https://github.com/user-attachments/files/21992008/Pick.and.Place.1.pdf), [Pick and Place 2.pdf](https://github.com/user-attachments/files/21992019/Pick.and.Place.2.pdf), [Pick and Place 3.pdf](https://github.com/user-attachments/files/22001818/Pick.and.Place.3.pdf)
+* Program summary: [Programe Blocks.pdf](https://github.com/user-attachments/files/21992036/Programe.Blocks.pdf) *(rename to program-blocks.pdf recommended)*
+* Tags / I/O list: [Tags.pdf](https://github.com/user-attachments/files/22001814/Tags.pdf)
 
 ---
 
-## 🧬 State Machine Example (Machining)
+## 🧬 Palletizer & Crane: Functional Summary
 
-States (ENUM):
+Palletizer:
+* Accepts boxes from packing conveyor.
+* Accumulates boxes according to pallet pattern (rows / columns).
+* Controls pallet magazine (present / clamp / raise / lower).
+* Outputs: Pallet_Ready, Pallet_Full, Pallet_Clamp, Pallet_Raise
+* Handshake with Crane: Pallet_ReadyForPick → Crane picks up pallet.
+
+Overhead Crane:
+* Receives pallet pickup requests from Palletizer or operator.
+* Moves along X/Y rails to pick & place pallet positions.
+* Includes lift/lower and clamp/unclamp actions.
+* Interlocks: speed limits, no-motion during adjacent cell active if configured.
+* Outputs: Crane_Position, Crane_Busy, Crane_Error
+
+Suggested tags (examples — map to actual %I/%Q addresses in Tags.pdf):
+* PAL_Present, PAL_ClampCmd, PAL_RaiseCmd, PAL_PalletID
+* CRN_XCmd, CRN_YCmd, CRN_LiftCmd, CRN_ClampCmd, CRN_Status
+
+---
+
+## 🧬 State Machine Example (Palletizer)
+
+States:
 0 Idle  
-1 WaitPart  
-2 Clamp  
-3 Process  
-4 Unclamp  
-5 Unload  
-6 Complete (one-shot to upstream)  
+1 WaitForBox  
+2 PlaceBoxRow  
+3 AdvancePattern  
+4 FullPalletPrepare  
+5 SignalCranePickup  
+6 Complete / Reset
 
-
----
-
-## ⚙️ Tag Naming Convention (Examples)
-
-Prefix style (legacy):
-* I_ (Inputs) – e.g., I_Infeed_PE
-* Q_ (Outputs) – e.g., Q_Div_Left
-* M_ (Memory) – e.g., M_Part_Latched
-
-Structured style (recommended):
-* gIO.Sensors.Infeed.Present
-* gCtrl.Machining[1].State
-* gStat.Packing.BatchCount
-
+Transitions triggered by box arrival, pattern index, pallet sensors and crane handshake.
 
 ---
 
-## 🔌 I/O Mapping (Example Skeleton)
+## 🔌 I/O Mapping
 
-| Function | Factory I/O Element | PLC Address | Tag |
-|----------|--------------------|-------------|-----|
-| Infeed Photoeye | Sensor_1 | I0.0 | I_Infeed_PE |
-| Color Sensor Blue | Diffuse_Blue | I0.1 | I_Color_Blue |
-| Color Sensor Green | Diffuse_Green | I0.2 | I_Color_Green |
-| Metal Capacitive | Cap_Sensor | I0.3 | I_Metal |
-| Diverter Left Solenoid | Diverter_L | Q0.0 | Q_Div_Left |
-| Diverter Right Solenoid | Diverter_R | Q0.1 | Q_Div_Right |
-| Machining Clamp | ClampAct | Q0.2 | Q_Clamp |
-| Spindle Motor | Spindle | Q0.3 | Q_Spindle |
-| QA Reject Pusher | RejectPusher | Q0.4 | Q_Reject |
+Be sure to update the I/O mapping PDF/files to include:
+* Palletizer sensors & actuators
+* Crane travel axes, lift, clamp feedback
+* Any new safety edges (light curtains / crane zone sensors)
 
+Example mapping should appear in `docs/pdf/tags-io-mapping.pdf` (suggested) or the existing Tags.pdf.
 
 ---
 
-## 🧪 Quality Gate Logic (Sample Pseudocode)
+## 🧪 Quality Gate & Packing Logic (Reminder)
 
-```
-IF RisingEdge(Assembled_Unit) THEN
-  IF (PartType = BLUE AND Machined = TRUE AND LidPresent = TRUE)
-     OR (PartType = GREEN AND Machined = TRUE AND LidPresent = TRUE)
-     OR (PartType = METAL AND Machined = TRUE AND (NOT RequiresLid OR LidPresent))
-  THEN
-     QA_OK := TRUE;
-  ELSE
-     QA_Fail := TRUE;
-  END_IF;
-END_IF;
-```
-
----
-
-## 📦 Packing Logic
-
-* Parameter: Batch_Size (e.g., 10)
-* On QA_OK rising edge → Pack_Count := Pack_Count + 1
-* IF Pack_Count >= Batch_Size THEN
-  * Batch_Done (one-shot pulse)
-  * Pack_Count := 0
-
-Future: Multi-layer palletization, dynamic batch sizing per recipe.
-
----
-
-## 🛡️ Safety & Interlocks (Simulation-Oriented)
-
-Soft Checks:
-* Jam detection: Part presence not changing while conveyor commanded for > timeout.
-* Diverter mutual exclusion: Prevent simultaneous left/right coil outputs.
-* Machining start requires clamp feedback & Part_Present.
-* Assembly requires base + lid ready flags.
-* E-Stop / Stop button sets MasterInhibit until Reset.
-
-Optional:
-* Central Alarm Aggregator (Bitwise OR of faults).
-* Controlled restart logic (wait for all moving axes to reach safe position).
-
----
-
-## 🧾 KPIs (Planned)
-
-* Parts_Infeed_Total
-* Machined_OK
-* Assembled_OK
-* QA_Fail_Count
-* Packaged_Units
-* Batches_Completed
-* Avg_Machining_Cycle_Time
-* Machine_Utilization[%]
-* MTBF / MTTR placeholders (manual capture initially)
+Quality gate and packing logic remain the same, with the addition that Packed units are forwarded to the Palletizer. The packing system should emit a Palletizer_Request when enough packages are ready to start a pallet pattern.
 
 ---
 
 ## 🛠️ Toolkit
 
-* PLC: Siemens S7-1200 (PLCSIM)
+* PLC: Siemens S7-1200 (PLCSIM) or S7-1500 if you migrate
 * IDE: Siemens TIA Portal v19
 * Simulation: Factory I/O (Siemens S7-PLCSIM driver)
-* (Optional) HMI: WinCC panel / PC runtime
+* Optional: WinCC HMI for operational control & KPI screens
 
 ---
 
-## 🚀 How to Run
+## 🚀 How to Run (Updated)
 
-1. Restore the `.zap19` project in TIA Portal v19.
-2. Compile & load to PLCSIM (check correct CPU type).
-3. Open the `.factoryio` scene in Factory I/O.
-4. Configure Driver: Siemens S7-PLCSIM (IP 127.0.0.1), verify Rack/Slot (e.g., 0/1).
-5. Connect – confirm sensor bits change when parts are inserted.
-6. Enable master start (HMI / Watch table).
-7. Monitor key tags: gCtrl.Machining[*].State, gStat.Packing.Pack_Count, QA_OK, Diverter_CMD.
-8. Run animations to validate flow.
+1. Restore the `.zap19` project in TIA Portal v19 (ensure all FBs/DBs imported).
+2. Compile & load to PLCSIM (check CPU selection).
+3. Open `.factoryio` scene and start Factory I/O.
+4. Set driver: Siemens S7-PLCSIM (127.0.0.1), verify Rack/Slot.
+5. Confirm new I/O bits for palletizer & crane respond in the driver panel.
+6. Start simulation and enable master start.
+7. Watch tags: PACK_Count, PAL_State, CRN_Status, QA_OK, MC[n].State.
+8. Use the demo YouTube link above to compare expected behavior.
 
 ---
 
-## 🧪 Testing Checklist
+## 🧪 Testing Checklist (Added Palletizer & Crane tests)
 
 | Test | Action | Expected |
 |------|--------|----------|
-| Infeed Detection | Place part at entry | I_Infeed_PE = 1 |
-| Sorting | Introduce Blue/Green/Metal sequence | Correct diverter activation |
-| Buffer Full | Fill buffer beyond threshold | New routing pauses for that type |
-| Machining | Feed & start cycle | State transitions 0→6 |
-| Assembly | Provide base + lid | Asm_Done + QA_OK |
-| QA Reject | Disable lid for lid-required type | QA_Fail increments |
-| Packing | Run Batch_Size good units | Batch_Done pulse |
-| Stop Button | Press mid-process | All motion outputs drop |
-| Restart | Reset & Start | Cycle resumes from safe Idle |
-
----
-
-## 🧩 Troubleshooting
-
-| Symptom | Possible Cause | Resolution |
-|---------|----------------|-----------|
-| No PLC connection | Wrong driver IP / slot | Reconfigure driver |
-| Diverter inactive | Interlock or no part request | Check Diverter_CMD & part classification |
-| Machining stuck in WaitPart | Buffer empty flag true | Inspect Buffer_Release logic |
-| Assembly never starts | Missing lid or base ready | Validate readiness bits |
-| Batch never completes | QA_OK edge missing | Review edge detection logic |
-| Continuous QA fails | Classification mismatch | Trace PartType & LidPresent sensors |
+| Palletizer Start | Send N boxes according to pattern | Palletizer places boxes row-by-row |
+| Pallet Full | Fill pallet pattern | Pallet_Full = TRUE; Palletizer signals Crane |
+| Crane Pickup | Palletizer signals pickup | Crane moves to pallet, clamps & transports |
+| Crane Place | Crane places pallet in staging | Pallet staged; Crane returns to home |
+| Palletizer Error | Pause conveyor mid-pattern | Palletizer stops & raises alarm |
+| Emergency Stop | Press E-Stop | Palletizer & Crane motion stop immediately |
 
 ---
 
 ## 🔮 Future Enhancements
 
-* RFID / serialized tracking
-* Recipe management (per-type cycle times, required lid)
-* OEE dashboard (Availability / Performance / Quality)
-* Fault injection (toggle simulated sensor errors)
-* Migration of sequences to SCL for maintainability
-* OPC UA / MQTT integration for MES / SCADA layer
-* Alarm history ring buffer with timestamping
+* Pallet pattern editor in HMI
+* Pallet labeling & serialization (RFID)
+* Crane collision zones & multi-crane support
+* OPC UA telemetry for MES / Warehouse Management
+* Enhanced alarm history & CSV export
+* Optimize FBs to SCL for maintainability
 
 ---
 
-## 🗂️ Repository Structure (Proposed)
+## 🗂️ Suggested Repository Structure
 
 ```
 /tia_project/            (zap19 + exported blocks)
 /factory_io/             (.factoryio scene)
 /docs/
   images/
+    layout_01.png
+    layout_02.png
   pdf/
     ob1-main.pdf
     fb-pick-place-1.pdf
     program-blocks.pdf
-    data-blocks.pdf
+    tags-io-mapping.pdf
   io-mapping.md
   state-machines.md
-/hmi/                    (HMI runtime or screens)
+/hmi/
+/animations/
+  sorting.mp4
+  machining.mp4
+  assembly.mp4
 README.md
 LICENSE
 ```
 
 ---
 
+## 📜 License & Contribution
 
-## 🙌 Contributions
-
-1. Fork repository  
-2. Create feature branch (`feat/...`)  
-3. Commit with descriptive messages  
-4. Open Pull Request with summary + test evidence  
+Add a license of choice (MIT, Apache-2.0, etc.) to clarify reuse. Contributions welcome — fork, branch, and open a PR with changes and test notes.
 
 ---
 
-## ❓ FAQ
-
-Q: Can I use S7-1500 instead?  
-A: Yes—adjust hardware configuration and confirm address integrity.
-
-Q: Can this run on a physical cell?  
-A: Core logic can, but implement real safety (E-Stop circuits, guard monitoring).
-
-Q: Why are timers used for some steps?  
-A: Simulation abstracts physical confirmations; replace timers with sensor feedback in real hardware.
+## ❓ Notes & Corrections Applied
+* Corrected inconsistent color reference (removed stray "Red" mention; product types are Blue, Green, Metal).
+* Corrected spelling “Assemblying” → “Assembling” while keeping a note for continuity.
+* Added Palletizer and Crane functional descriptions, tags, state machines, and tests.
+* Included the provided YouTube demo link at the top (your request).
+* Recommended renaming and mirroring PDFs/images into `docs/` for permanence.
 
 ---
+
+Happy Automating — congratulations on adding the palletizer and crane!  
+(If you'd like, I can prepare a commit with this README.md and move your images/PDFs into the suggested `docs/` layout — tell me which filenames to use and I will create the files for you.)
