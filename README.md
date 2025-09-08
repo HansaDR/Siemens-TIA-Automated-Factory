@@ -1,6 +1,7 @@
 # Siemens-TIA-Automated-Factory
 
 # Automated Sorting, Machining, Assembling and Packing Simulation
+
 A fully simulated discrete manufacturing line built with Siemens TIA Portal (v19), PLCSIM, and Factory I/O.  
 This project now includes completed palletizer and overhead crane subsystems (see demo link below). The virtual plant performs a complete mini production workflow:
 1. Infeed & Identification (color / material based)
@@ -20,9 +21,21 @@ Demo (YouTube — full system including Palletizer & Crane): https://youtu.be/OT
 (Consider mirroring these images into `docs/images/` for repo permanence.)
 
 ![Layout 1](https://github.com/user-attachments/assets/7707c6c0-8167-4c50-aa64-389f60f18609)
+
 ![Layout 2](https://github.com/user-attachments/assets/8c1d7da5-2009-4099-b6bf-49c8d57da534)
+
+![Palletizer](https://github.com/user-attachments/assets/8878b386-3330-4e31-9886-498a8339153e)
+
+![Crane](https://github.com/user-attachments/assets/be5425c2-5c86-4801-99ac-891e44bb19c9)
+
 ![I/O Mapping View A](https://github.com/user-attachments/assets/f992d9c7-0730-40b0-8fa6-73b1c366a4b9)
+
 ![I/O Mapping View B](https://github.com/user-attachments/assets/8ff4890f-c850-40a0-af37-7eee2e13db37)
+
+![Siemens portal View](https://github.com/user-attachments/assets/936d9914-f021-4e46-8a9a-2890ef23163e)
+
+![Full Layout](https://github.com/user-attachments/assets/63dd3062-6885-4eab-84bc-48e1a5f31dc1)
+
 
 ---
 
@@ -65,6 +78,27 @@ Demonstrate an educational yet industry-relevant control solution that:
 8. Overhead crane moves completed pallets to storage or shipping staging area.
 9. System logs KPI events and errors to DB_Stats for later analysis.
 
+
+https://github.com/user-attachments/assets/df8f3cd5-ff5d-4ef1-b110-b7a586000ebb
+
+
+
+https://github.com/user-attachments/assets/bc6bd6c0-6cc8-4c47-9b1a-6a771f753608
+
+
+
+
+https://github.com/user-attachments/assets/d9c5d33d-6e95-437a-aa43-d561a95f411f
+
+
+
+https://github.com/user-attachments/assets/8f1e0e19-c0f8-4095-960b-fefa080bbcad
+
+
+
+https://github.com/user-attachments/assets/47565103-dc18-467a-962b-02ae6d3db955
+
+
 ---
 
 ## 🧠 Control Architecture (Recommended)
@@ -92,10 +126,12 @@ Data Blocks:
 * DB_Recipes – batch sizes, pallet patterns, machine recipes
 
 PDF references included in repo:
-* Main control organization: [Main(OB1).pdf](https://github.com/user-attachments/files/21991994/Main.OB1.pdf)
+* Main control organization: [Main(OB1).pdf](https://github.com/user-attachments/files/22209186/Main.OB1.pdf)
 * Pick & Place FBs: [Pick and Place 1.pdf](https://github.com/user-attachments/files/21992008/Pick.and.Place.1.pdf), [Pick and Place 2.pdf](https://github.com/user-attachments/files/21992019/Pick.and.Place.2.pdf), [Pick and Place 3.pdf](https://github.com/user-attachments/files/22001818/Pick.and.Place.3.pdf)
-* Program summary: [Programe Blocks.pdf](https://github.com/user-attachments/files/21992036/Programe.Blocks.pdf) *(rename to program-blocks.pdf recommended)*
-* Tags / I/O list: [Tags.pdf](https://github.com/user-attachments/files/22001814/Tags.pdf)
+* Palletizer FBs: [Palletizer.pdf](https://github.com/user-attachments/files/22209213/Palletizer.pdf)
+* Crane FBs: [Crane.pdf](https://github.com/user-attachments/files/22209227/Crane.pdf)
+* Program summary:[program-blocks.pdf](https://github.com/user-attachments/files/22209290/program-blocks.pdf)
+* Tags / I/O list: [Tags.pdf](https://github.com/user-attachments/files/22209248/Tags.pdf)
 
 ---
 
@@ -166,7 +202,7 @@ Quality gate and packing logic remain the same, with the addition that Packed un
 
 1. Restore the `.zap19` project in TIA Portal v19 (ensure all FBs/DBs imported).
 2. Compile & load to PLCSIM (check CPU selection).
-3. Open `.factoryio` scene and start Factory I/O.
+3. Open the `.factoryio` scene and start Factory I/O.
 4. Set driver: Siemens S7-PLCSIM (127.0.0.1), verify Rack/Slot.
 5. Confirm new I/O bits for palletizer & crane respond in the driver panel.
 6. Start simulation and enable master start.
@@ -234,12 +270,20 @@ Add a license of choice (MIT, Apache-2.0, etc.) to clarify reuse. Contributions 
 
 ## ❓ Notes & Corrections Applied
 * Corrected inconsistent color reference (removed stray "Red" mention; product types are Blue, Green, Metal).
-* Corrected spelling “Assemblying” → “Assembling” while keeping a note for continuity.
+* Corrected spelling “Assemblying” → “Assembling”.
 * Added Palletizer and Crane functional descriptions, tags, state machines, and tests.
 * Included the provided YouTube demo link at the top (your request).
 * Recommended renaming and mirroring PDFs/images into `docs/` for permanence.
 
 ---
 
+## 📎 Adobe / External Assets
+
+If you host assets in Adobe Creative Cloud or another external storage, add the shared link here. Replace the placeholder with your real shared URL:
+
+Adobe Creative Cloud (Shared assets): https://adobe.com/your-shared-link
+
+---
+
 Happy Automating — congratulations on adding the palletizer and crane!  
-(If you'd like, I can prepare a commit with this README.md and move your images/PDFs into the suggested `docs/` layout — tell me which filenames to use and I will create the files for you.)
+(If you'd like, I can prepare the commit/PR with this README and move/rename the assets into the suggested `docs/` layout — tell me the filenames and the Adobe shared URL and I'll prepare the PR content for you.)
